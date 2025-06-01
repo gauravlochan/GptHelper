@@ -16,12 +16,18 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.lochan.gpthelper.ui.theme.GptHelperTheme
 
+/**
+ * Main activity of the application that handles URL sharing functionality.
+ * This activity can be launched in two ways:
+ * 1. Directly from the app launcher
+ * 2. As a share target when sharing URLs from other apps
+ */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
+        enableEdgeToEdge() // Enables edge-to-edge display
         
-        // Handle shared URL if the app was launched from a share
+        // Check if the app was launched via URL sharing
         handleIntent(intent)
         
         setContent {
@@ -31,12 +37,21 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Called when a new intent is delivered to an already running activity.
+     * This is important for handling URL shares when the app is already running.
+     */
     override fun onNewIntent(intent: Intent?) {
         super.onNewIntent(intent)
         handleIntent(intent)
     }
 
+    /**
+     * Processes the incoming intent to extract shared URLs.
+     * @param intent The intent that started the activity or was delivered via onNewIntent
+     */
     private fun handleIntent(intent: Intent?) {
+        // Check if this is a share action with text/plain content
         if (intent?.action == Intent.ACTION_SEND && intent.type == "text/plain") {
             val sharedText = intent.getStringExtra(Intent.EXTRA_TEXT)
             if (sharedText != null) {
@@ -48,8 +63,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+/**
+ * Main screen composable that displays the list of shared URLs.
+ * Shows a placeholder message when no URLs are available.
+ */
 @Composable
 fun SharedUrlScreen() {
+    // Collect the list of URLs as state to trigger recomposition when it changes
     val urls by SharedUrlState.urls.collectAsState()
     
     Scaffold(
@@ -60,6 +80,7 @@ fun SharedUrlScreen() {
         }
     ) { padding ->
         if (urls.isEmpty()) {
+            // Show a centered message when no URLs are available
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -69,6 +90,7 @@ fun SharedUrlScreen() {
                 Text("No URLs shared yet")
             }
         } else {
+            // Display the list of URLs in a scrollable column
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
@@ -82,6 +104,10 @@ fun SharedUrlScreen() {
     }
 }
 
+/**
+ * Composable that displays a single URL in a card.
+ * @param url The URL to display
+ */
 @Composable
 fun UrlItem(url: String) {
     Card(
@@ -96,18 +122,28 @@ fun UrlItem(url: String) {
         ) {
             Text(
                 text = url,
-                maxLines = 2,
-                overflow = TextOverflow.Ellipsis
+                maxLines = 2, // Limit to 2 lines to prevent very long URLs from taking too much space
+                overflow = TextOverflow.Ellipsis // Show ... for truncated text
             )
         }
     }
 }
 
-// Simple state holder for shared URLs
+/**
+ * Simple state holder for managing shared URLs.
+ * This is a temporary solution - in a production app, we would use a proper data store.
+ */
 object SharedUrlState {
+    // Private mutable state list that holds the URLs
     private val _urls = mutableStateListOf<String>()
+    // Public immutable list that can be observed by the UI
     val urls: List<String> = _urls
 
+    /**
+     * Adds a new URL to the list.
+     * New URLs are added at the beginning of the list.
+     * @param url The URL to add
+     */
     fun addUrl(url: String) {
         _urls.add(0, url) // Add new URLs at the top
     }
