@@ -32,7 +32,12 @@ class MainActivity : ComponentActivity() {
         
         setContent {
             GptHelperTheme {
-                SharedUrlScreen()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    SharedUrlScreen()
+                }
             }
         }
     }
@@ -67,6 +72,7 @@ class MainActivity : ComponentActivity() {
  * Main screen composable that displays the list of shared URLs.
  * Shows a placeholder message when no URLs are available.
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SharedUrlScreen() {
     // Collect the list of URLs as state to trigger recomposition when it changes
