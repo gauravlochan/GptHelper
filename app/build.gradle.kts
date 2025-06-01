@@ -63,6 +63,9 @@ dependencies {
     implementation("com.aallam.openai:openai-client:3.7.0")
     implementation("io.ktor:ktor-client-android:2.3.7")
     
+    // Security
+    implementation("androidx.security:security-crypto:1.1.0-alpha06")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

@@ -1,5 +1,6 @@
 package net.lochan.gpthelper.api
 
+import android.content.Context
 import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
@@ -12,8 +13,9 @@ import kotlin.time.Duration.Companion.seconds
  * Service class for handling ChatGPT API interactions.
  * This is the first version focusing on authentication.
  */
-class ChatGptService {
+class ChatGptService(private val context: Context) {
     private var openAI: OpenAI? = null
+    private val credentialStorage = SecureCredentialStorage(context)
 
     /**
      * Initializes the OpenAI client with the provided API key.
@@ -25,6 +27,21 @@ class ChatGptService {
             timeout = Timeout(socket = 30.seconds, connect = 30.seconds) // 30 seconds for both socket and connect timeouts
         )
         openAI = OpenAI(config)
+        credentialStorage.saveApiKey(apiKey)
+    }
+
+    /**
+     * Initializes the OpenAI client with the saved API key if available.
+     * @return true if initialization was successful, false otherwise
+     */
+    fun initializeWithSavedKey(): Boolean {
+        val savedKey = credentialStorage.getApiKey()
+        return if (savedKey != null) {
+            initialize(savedKey)
+            true
+        } else {
+            false
+        }
     }
 
     /**
@@ -56,5 +73,13 @@ class ChatGptService {
                 emptyList()
             }
         }
+    }
+
+    /**
+     * Clears the saved API key and resets the OpenAI client.
+     */
+    fun clearCredentials() {
+        credentialStorage.clearApiKey()
+        openAI = null
     }
 } 
