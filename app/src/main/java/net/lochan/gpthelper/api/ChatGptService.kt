@@ -6,6 +6,7 @@ import com.aallam.openai.client.OpenAIConfig
 import com.aallam.openai.api.http.Timeout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import kotlin.time.Duration.Companion.seconds
 
 /**
  * Service class for handling ChatGPT API interactions.
@@ -21,7 +22,7 @@ class ChatGptService {
     fun initialize(apiKey: String) {
         val config = OpenAIConfig(
             token = apiKey,
-            timeout = Timeout(socket = 30000, connect = 30000) // 30 seconds for both socket and connect timeouts
+            timeout = Timeout(socket = 30.seconds, connect = 30.seconds) // 30 seconds for both socket and connect timeouts
         )
         openAI = OpenAI(config)
     }
