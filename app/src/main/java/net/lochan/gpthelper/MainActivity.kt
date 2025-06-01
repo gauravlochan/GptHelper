@@ -21,6 +21,9 @@ import net.lochan.gpthelper.ui.theme.GptHelperTheme
  * This activity can be launched in two ways:
  * 1. Directly from the app launcher
  * 2. As a share target when sharing URLs from other apps
+ * 
+ * Note: This is the first version of the app that only handles basic URL sharing.
+ * Future versions will include ChatGPT integration and conversation management.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
