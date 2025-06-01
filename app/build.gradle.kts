@@ -59,6 +59,10 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.7.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0")
     
+    // OpenAI Client
+    implementation("com.aallam.openai:openai-client:3.7.0")
+    implementation("io.ktor:ktor-client-android:2.3.7")
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
