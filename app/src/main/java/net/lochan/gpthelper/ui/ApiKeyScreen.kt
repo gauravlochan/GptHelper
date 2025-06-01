@@ -13,6 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.semantics.testTag
 import net.lochan.gpthelper.viewmodel.ApiKeyState
 import net.lochan.gpthelper.viewmodel.ApiKeyViewModel
 

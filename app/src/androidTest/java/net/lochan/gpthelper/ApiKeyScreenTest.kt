@@ -11,9 +11,9 @@ import net.lochan.gpthelper.viewmodel.ApiKeyViewModel
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import org.mockito.Mockito.mock
-import org.mockito.Mockito.verify
-import org.mockito.kotlin.whenever
+import io.mockk.mockk
+import io.mockk.verify
+import io.mockk.every
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -32,8 +32,8 @@ class ApiKeyScreenTest {
     @Test
     fun initialState_showsEmptyInput() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
-        whenever(viewModel.apiKeyState).thenReturn(MutableStateFlow(ApiKeyState.NotConfigured))
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
+        every { viewModel.apiKeyState } returns MutableStateFlow(ApiKeyState.NotConfigured)
 
         // Act
         composeTestRule.setContent {
@@ -44,15 +44,15 @@ class ApiKeyScreenTest {
         }
 
         // Assert
-        composeTestRule.onNodeWithText("ChatGPT API Key").assertExists()
-        composeTestRule.onNodeWithText("Save API Key").assertExists().assertIsNotEnabled()
+        composeTestRule.onNodeWithText("ChatGPT API Key").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Save API Key").assertIsDisplayed().assertIsNotEnabled()
     }
 
     @Test
     fun whenApiKeyEntered_saveButtonBecomesEnabled() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
-        whenever(viewModel.apiKeyState).thenReturn(MutableStateFlow(ApiKeyState.NotConfigured))
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
+        every { viewModel.apiKeyState } returns MutableStateFlow(ApiKeyState.NotConfigured)
 
         // Act
         composeTestRule.setContent {
@@ -73,9 +73,9 @@ class ApiKeyScreenTest {
     @Test
     fun whenValidating_showsLoadingState() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
         val stateFlow = MutableStateFlow<ApiKeyState>(ApiKeyState.NotConfigured)
-        whenever(viewModel.apiKeyState).thenReturn(stateFlow)
+        every { viewModel.apiKeyState } returns stateFlow
 
         // Act
         composeTestRule.setContent {
@@ -94,16 +94,16 @@ class ApiKeyScreenTest {
         stateFlow.value = ApiKeyState.Validating
 
         // Assert
-        composeTestRule.onNodeWithText("Validating API key...").assertExists()
-        composeTestRule.onAllNodesWithContentDescription("CircularProgressIndicator").assertExists()
+        composeTestRule.onNodeWithText("Validating API key...").assertIsDisplayed()
+        composeTestRule.onAllNodesWithContentDescription("CircularProgressIndicator").onFirst().assertIsDisplayed()
     }
 
     @Test
     fun whenInvalidKey_showsErrorState() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
         val stateFlow = MutableStateFlow<ApiKeyState>(ApiKeyState.NotConfigured)
-        whenever(viewModel.apiKeyState).thenReturn(stateFlow)
+        every { viewModel.apiKeyState } returns stateFlow
 
         // Act
         composeTestRule.setContent {
@@ -122,15 +122,15 @@ class ApiKeyScreenTest {
         stateFlow.value = ApiKeyState.Invalid
 
         // Assert
-        composeTestRule.onNodeWithText("Invalid API key. Please check and try again.").assertExists()
+        composeTestRule.onNodeWithText("Invalid API key. Please check and try again.").assertIsDisplayed()
     }
 
     @Test
     fun whenValidKey_showsSuccessState() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
         val stateFlow = MutableStateFlow<ApiKeyState>(ApiKeyState.NotConfigured)
-        whenever(viewModel.apiKeyState).thenReturn(stateFlow)
+        every { viewModel.apiKeyState } returns stateFlow
 
         // Act
         composeTestRule.setContent {
@@ -149,16 +149,16 @@ class ApiKeyScreenTest {
         stateFlow.value = ApiKeyState.Configured
 
         // Assert
-        composeTestRule.onNodeWithText("API key is configured and valid.").assertExists()
-        composeTestRule.onNodeWithText("Clear API Key").assertExists()
+        composeTestRule.onNodeWithText("API key is configured and valid.").assertIsDisplayed()
+        composeTestRule.onNodeWithText("Clear API Key").assertIsDisplayed()
     }
 
     @Test
     fun whenConfigured_clearButtonRemovesKey() {
         // Arrange
-        val viewModel = mock(ApiKeyViewModel::class.java)
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
         val stateFlow = MutableStateFlow<ApiKeyState>(ApiKeyState.Configured)
-        whenever(viewModel.apiKeyState).thenReturn(stateFlow)
+        every { viewModel.apiKeyState } returns stateFlow
 
         // Act
         composeTestRule.setContent {
@@ -172,15 +172,15 @@ class ApiKeyScreenTest {
         composeTestRule.onNodeWithText("Clear API Key").performClick()
 
         // Assert
-        verify(viewModel).clearApiKey()
+        verify { viewModel.clearApiKey() }
     }
 
     @Test
     fun backButton_triggersNavigation() {
         // Arrange
         var navigationTriggered = false
-        val viewModel = mock(ApiKeyViewModel::class.java)
-        whenever(viewModel.apiKeyState).thenReturn(MutableStateFlow(ApiKeyState.NotConfigured))
+        val viewModel = mockk<ApiKeyViewModel>(relaxed = true)
+        every { viewModel.apiKeyState } returns MutableStateFlow(ApiKeyState.NotConfigured)
 
         // Act
         composeTestRule.setContent {
