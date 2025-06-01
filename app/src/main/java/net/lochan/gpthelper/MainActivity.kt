@@ -79,7 +79,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun SharedUrlScreen() {
     // Collect the list of URLs as state to trigger recomposition when it changes
-    val urls by SharedUrlState.urls.collectAsState()
+    val urls = SharedUrlState.urls
     
     Scaffold(
         topBar = {
