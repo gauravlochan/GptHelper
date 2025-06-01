@@ -8,12 +8,15 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import net.lochan.gpthelper.ui.ApiKeyScreen
 import net.lochan.gpthelper.ui.theme.GptHelperTheme
 
 /**
@@ -22,8 +25,8 @@ import net.lochan.gpthelper.ui.theme.GptHelperTheme
  * 1. Directly from the app launcher
  * 2. As a share target when sharing URLs from other apps
  * 
- * Note: This is the first version of the app that only handles basic URL sharing.
- * Future versions will include ChatGPT integration and conversation management.
+ * The activity also manages navigation between the main URL list screen
+ * and the API key configuration screen.
  */
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +42,21 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    SharedUrlScreen()
+                    // State to control which screen is currently shown
+                    // This enables simple navigation between the main screen and API key screen
+                    var showApiKeyScreen by remember { mutableStateOf(false) }
+                    
+                    if (showApiKeyScreen) {
+                        // Show API key configuration screen when showApiKeyScreen is true
+                        ApiKeyScreen(
+                            onNavigateBack = { showApiKeyScreen = false }
+                        )
+                    } else {
+                        // Show main URL list screen with a button to access API key settings
+                        SharedUrlScreen(
+                            onApiKeyClick = { showApiKeyScreen = true }
+                        )
+                    }
                 }
             }
         }
@@ -73,18 +90,28 @@ class MainActivity : ComponentActivity() {
 
 /**
  * Main screen composable that displays the list of shared URLs.
- * Shows a placeholder message when no URLs are available.
+ * Includes a settings button in the top app bar to access API key configuration.
+ * 
+ * @param onApiKeyClick Callback function to handle navigation to the API key screen
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SharedUrlScreen() {
+fun SharedUrlScreen(
+    onApiKeyClick: () -> Unit
+) {
     // Collect the list of URLs as state to trigger recomposition when it changes
     val urls = SharedUrlState.urls
     
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Shared URLs") }
+                title = { Text("Shared URLs") },
+                actions = {
+                    // Settings button to access API key configuration
+                    IconButton(onClick = onApiKeyClick) {
+                        Icon(Icons.Default.Settings, contentDescription = "API Key Settings")
+                    }
+                }
             )
         }
     ) { padding ->
