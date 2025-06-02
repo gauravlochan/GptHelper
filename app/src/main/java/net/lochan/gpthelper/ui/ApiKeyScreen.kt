@@ -13,7 +13,7 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.ui.semantics.testTag
+import androidx.compose.ui.platform.testTag
 import net.lochan.gpthelper.viewmodel.ApiKeyState
 import net.lochan.gpthelper.viewmodel.ApiKeyViewModel
 
@@ -86,8 +86,13 @@ fun ApiKeyScreen(
             when (apiKeyState) {
                 is ApiKeyState.Validating -> {
                     // Show loading indicator and message during validation
-                    CircularProgressIndicator()
-                    Text("Validating API key...")
+                    CircularProgressIndicator(
+                        modifier = Modifier.testTag("loading_indicator")
+                    )
+                    Text(
+                        "Validating API key...",
+                        modifier = Modifier.testTag("loading_text")
+                    )
                 }
                 is ApiKeyState.Invalid -> {
                     // Show error message for invalid keys

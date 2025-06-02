@@ -15,6 +15,7 @@ import io.mockk.mockk
 import io.mockk.verify
 import io.mockk.every
 import kotlinx.coroutines.flow.MutableStateFlow
+import androidx.compose.ui.test.onNodeWithTag
 
 /**
  * UI tests for the API key management screen.
@@ -94,8 +95,8 @@ class ApiKeyScreenTest {
         stateFlow.value = ApiKeyState.Validating
 
         // Assert
-        composeTestRule.onNodeWithText("Validating API key...").assertIsDisplayed()
-        composeTestRule.onAllNodesWithContentDescription("CircularProgressIndicator").onFirst().assertIsDisplayed()
+        composeTestRule.onNodeWithTag("loading_text").assertIsDisplayed()
+        composeTestRule.onNodeWithTag("loading_indicator").assertIsDisplayed()
     }
 
     @Test
