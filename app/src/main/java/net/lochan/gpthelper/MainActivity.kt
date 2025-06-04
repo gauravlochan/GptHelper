@@ -179,8 +179,17 @@ object SharedUrlState {
      * Adds a new URL to the list.
      * New URLs are added at the beginning of the list.
      * @param url The URL to add
+     * @throws IllegalArgumentException if url is null
      */
     fun addUrl(url: String) {
+        require(url != null) { "URL cannot be null" }
         _urls.add(0, url) // Add new URLs at the top
+    }
+
+    /**
+     * Clears all URLs from the list.
+     */
+    fun clear() {
+        _urls.clear()
     }
 }
