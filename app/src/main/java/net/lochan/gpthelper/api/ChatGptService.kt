@@ -13,9 +13,11 @@ import kotlin.time.Duration.Companion.seconds
  * Service class for handling ChatGPT API interactions.
  * This is the first version focusing on authentication.
  */
-class ChatGptService(private val context: Context) {
+class ChatGptService(
+    private val context: Context,
+    private val credentialStorage: CredentialStorage = SecureCredentialStorage(context)
+) {
     private var openAI: OpenAI? = null
-    private val credentialStorage = SecureCredentialStorage(context)
 
     /**
      * Initializes the OpenAI client with the provided API key.

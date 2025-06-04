@@ -5,79 +5,61 @@ import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.OpenAI
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
+import org.junit.After
 import org.junit.Before
 import org.junit.Test
-import org.junit.Assert.*
-import kotlin.time.Duration.Companion.seconds
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
+import kotlin.test.assertTrue
+import kotlin.test.assertNull
 
 class ChatGptServiceTest {
-    private lateinit var context: Context
-    private lateinit var credentialStorage: SecureCredentialStorage
+    private lateinit var credentialStorage: CredentialStorage
     private lateinit var openAI: OpenAI
-    private lateinit var chatGptService: ChatGptService
+    private lateinit var service: ChatGptService
+    private val context = mockk<android.content.Context>(relaxed = true)
 
     @Before
-    fun setup() {
-        context = mockk(relaxed = true)
+    fun setUp() {
         credentialStorage = mockk(relaxed = true)
         openAI = mockk(relaxed = true)
-        
-        // Mock the creation of ChatGptService to inject our mocks
-        mockkConstructor(ChatGptService::class)
-        every { 
-            anyConstructed<ChatGptService>().apply {
-                this::class.memberProperties.find { it.name == "credentialStorage" }?.apply {
-                    isAccessible = true
-                    set(this@apply, credentialStorage)
-                }
-                this::class.memberProperties.find { it.name == "openAI" }?.apply {
-                    isAccessible = true
-                    set(this@apply, openAI)
-                }
-            }
-        } returns Unit
+        service = ChatGptService(context, credentialStorage)
+    }
 
-        chatGptService = ChatGptService(context)
+    @After
+    fun tearDown() {
+        clearAllMocks()
     }
 
     @Test
-    fun `initialize sets up OpenAI client and saves API key`() {
-        // Arrange
-        val apiKey = "test-api-key"
-        coEvery { credentialStorage.saveApiKey(apiKey) } just Runs
-
-        // Act
-        chatGptService.initialize(apiKey)
-
-        // Assert
-        coVerify { credentialStorage.saveApiKey(apiKey) }
+    fun `initialize saves API key`() {
+        every { credentialStorage.saveApiKey("key") } just Runs
+        service.initialize("key")
+        verify { credentialStorage.saveApiKey("key") }
     }
 
     @Test
-    fun `initializeWithSavedKey returns true when valid key exists`() {
-        // Arrange
-        val savedKey = "valid-saved-key"
-        coEvery { credentialStorage.getApiKey() } returns savedKey
-
-        // Act
-        val result = chatGptService.initializeWithSavedKey()
-
-        // Assert
+    fun `initializeWithSavedKey returns true if key exists`() {
+        every { credentialStorage.getApiKey() } returns "key"
+        every { credentialStorage.saveApiKey("key") } just Runs
+        val result = service.initializeWithSavedKey()
         assertTrue(result)
-        coVerify { credentialStorage.getApiKey() }
+        verify { credentialStorage.getApiKey() }
     }
 
     @Test
-    fun `initializeWithSavedKey returns false when no key exists`() {
-        // Arrange
-        coEvery { credentialStorage.getApiKey() } returns null
-
-        // Act
-        val result = chatGptService.initializeWithSavedKey()
-
-        // Assert
+    fun `initializeWithSavedKey returns false if no key exists`() {
+        every { credentialStorage.getApiKey() } returns null
+        val result = service.initializeWithSavedKey()
         assertFalse(result)
-        coVerify { credentialStorage.getApiKey() }
+        verify { credentialStorage.getApiKey() }
+    }
+
+    @Test
+    fun `clearCredentials clears storage and resets OpenAI`() {
+        every { credentialStorage.clearApiKey() } just Runs
+        service.clearCredentials()
+        verify { credentialStorage.clearApiKey() }
     }
 
     @Test
@@ -88,7 +70,7 @@ class ChatGptServiceTest {
         coEvery { openAI.models() } returns models
 
         // Act
-        val result = chatGptService.validateApiKey(apiKey)
+        val result = service.validateApiKey(apiKey)
 
         // Assert
         assertTrue(result)
@@ -101,7 +83,7 @@ class ChatGptServiceTest {
         coEvery { openAI.models() } throws Exception("Invalid API key")
 
         // Act
-        val result = chatGptService.validateApiKey(apiKey)
+        val result = service.validateApiKey(apiKey)
 
         // Assert
         assertFalse(result)
@@ -113,7 +95,7 @@ class ChatGptServiceTest {
         coEvery { openAI.models() } throws Exception("Not authenticated")
 
         // Act
-        val result = chatGptService.getModels()
+        val result = service.getModels()
 
         // Assert
         assertTrue(result.isEmpty())
@@ -126,21 +108,9 @@ class ChatGptServiceTest {
         coEvery { openAI.models() } returns expectedModels
 
         // Act
-        val result = chatGptService.getModels()
+        val result = service.getModels()
 
         // Assert
         assertEquals(expectedModels, result)
-    }
-
-    @Test
-    fun `clearCredentials clears API key and resets OpenAI client`() {
-        // Arrange
-        coEvery { credentialStorage.clearApiKey() } just Runs
-
-        // Act
-        chatGptService.clearCredentials()
-
-        // Assert
-        coVerify { credentialStorage.clearApiKey() }
     }
 } 

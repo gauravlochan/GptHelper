@@ -5,10 +5,19 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 
 /**
+ * Interface for credential storage.
+ */
+interface CredentialStorage {
+    fun saveApiKey(apiKey: String)
+    fun getApiKey(): String?
+    fun clearApiKey()
+}
+
+/**
  * Secure storage for sensitive credentials like API keys.
  * Uses EncryptedSharedPreferences to ensure credentials are stored securely.
  */
-class SecureCredentialStorage(context: Context) {
+class SecureCredentialStorage(context: Context) : CredentialStorage {
     private val masterKey = MasterKey.Builder(context)
         .setKeyScheme(MasterKey.KeyScheme.AES256_GCM)
         .build()
@@ -29,7 +38,7 @@ class SecureCredentialStorage(context: Context) {
      * Saves the ChatGPT API key securely.
      * @param apiKey The API key to save
      */
-    fun saveApiKey(apiKey: String) {
+    override fun saveApiKey(apiKey: String) {
         sharedPreferences.edit().putString(KEY_API_KEY, apiKey).apply()
     }
 
@@ -37,14 +46,14 @@ class SecureCredentialStorage(context: Context) {
      * Retrieves the saved ChatGPT API key.
      * @return The saved API key, or null if not found
      */
-    fun getApiKey(): String? {
+    override fun getApiKey(): String? {
         return sharedPreferences.getString(KEY_API_KEY, null)
     }
 
     /**
      * Clears the saved API key.
      */
-    fun clearApiKey() {
+    override fun clearApiKey() {
         sharedPreferences.edit().remove(KEY_API_KEY).apply()
     }
 } 

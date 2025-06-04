@@ -3,6 +3,7 @@ package net.lochan.gpthelper
 import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
+import java.net.URL
 
 class SharedUrlStateTest {
     @Before
@@ -87,10 +88,33 @@ class SharedUrlStateTest {
     }
 
     @Test
-    fun `addUrl handles null URL`() {
+    fun `addUrl validates URL format`() {
         // Act & Assert
         assertThrows(IllegalArgumentException::class.java) {
-            SharedUrlState.addUrl(null)
+            SharedUrlState.addUrl("not-a-valid-url")
+        }
+    }
+
+    @Test
+    fun `addUrl accepts valid URLs`() {
+        // Arrange
+        val validUrls = listOf(
+            "https://example.com",
+            "http://example.com",
+            "https://example.com/path",
+            "https://example.com/path?query=value",
+            "https://example.com:8080/path"
+        )
+
+        // Act & Assert
+        validUrls.forEach { url ->
+            try {
+                SharedUrlState.addUrl(url)
+                // If we get here, the URL was accepted
+                assertTrue(true)
+            } catch (e: Exception) {
+                fail("Valid URL was rejected: $url")
+            }
         }
     }
 } 

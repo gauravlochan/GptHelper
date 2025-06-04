@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.lochan.gpthelper.ui.ApiKeyScreen
 import net.lochan.gpthelper.ui.theme.GptHelperTheme
+import java.net.URL
 
 /**
  * Main activity of the application that handles URL sharing functionality.
@@ -179,11 +180,17 @@ object SharedUrlState {
      * Adds a new URL to the list.
      * New URLs are added at the beginning of the list.
      * @param url The URL to add
-     * @throws IllegalArgumentException if url is null
+     * @throws IllegalArgumentException if url is null or invalid
      */
     fun addUrl(url: String) {
-        require(url != null) { "URL cannot be null" }
-        _urls.add(0, url) // Add new URLs at the top
+        require(url.isNotEmpty()) { "URL cannot be empty" }
+        try {
+            // Validate URL format
+            URL(url)
+            _urls.add(0, url) // Add new URLs at the top
+        } catch (e: Exception) {
+            throw IllegalArgumentException("Invalid URL format: $url", e)
+        }
     }
 
     /**
