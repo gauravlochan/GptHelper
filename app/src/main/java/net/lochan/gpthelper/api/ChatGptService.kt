@@ -15,7 +15,8 @@ import kotlin.time.Duration.Companion.seconds
  */
 class ChatGptService(
     private val context: Context,
-    private val credentialStorage: CredentialStorage = SecureCredentialStorage(context)
+    private val credentialStorage: CredentialStorage = SecureCredentialStorage(context),
+    private val openAIFactory: (OpenAIConfig) -> OpenAI = { config -> OpenAI(config) }
 ) {
     private var openAI: OpenAI? = null
 
@@ -28,7 +29,7 @@ class ChatGptService(
             token = apiKey,
             timeout = Timeout(socket = 30.seconds, connect = 30.seconds) // 30 seconds for both socket and connect timeouts
         )
-        openAI = OpenAI(config)
+        openAI = openAIFactory(config)
         credentialStorage.saveApiKey(apiKey)
     }
 

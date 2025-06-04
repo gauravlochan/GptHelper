@@ -5,11 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.animation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +20,8 @@ import androidx.compose.ui.unit.dp
 import net.lochan.gpthelper.ui.ApiKeyScreen
 import net.lochan.gpthelper.ui.theme.GptHelperTheme
 import java.net.URL
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 /**
  * Main activity of the application that handles URL sharing functionality.
@@ -100,38 +103,71 @@ class MainActivity : ComponentActivity() {
 fun SharedUrlScreen(
     onApiKeyClick: () -> Unit
 ) {
-    // Collect the list of URLs as state to trigger recomposition when it changes
     val urls = SharedUrlState.urls
     
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text("Shared URLs") },
+            LargeTopAppBar(
+                title = { 
+                    Column {
+                        Text(
+                            "GptHelper",
+                            style = MaterialTheme.typography.headlineLarge
+                        )
+                        Text(
+                            "Share URLs to analyze with ChatGPT",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
                 actions = {
-                    // Settings button to access API key configuration
                     IconButton(onClick = onApiKeyClick) {
                         Icon(Icons.Default.Settings, contentDescription = "API Key Settings")
                     }
-                }
+                },
+                colors = TopAppBarDefaults.largeTopAppBarColors(
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface
+                )
             )
         }
     ) { padding ->
         if (urls.isEmpty()) {
-            // Show a centered message when no URLs are available
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(padding),
                 contentAlignment = Alignment.Center
             ) {
-                Text("No URLs shared yet")
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Icon(
+                        Icons.Default.Link,
+                        contentDescription = null,
+                        modifier = Modifier.size(64.dp),
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        "No URLs shared yet",
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                    Text(
+                        "Share a URL from any app to get started",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
             }
         } else {
-            // Display the list of URLs in a scrollable column
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(padding)
+                    .padding(padding),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(urls) { url ->
                     UrlItem(url)
@@ -145,23 +181,64 @@ fun SharedUrlScreen(
  * Composable that displays a single URL in a card.
  * @param url The URL to display
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun UrlItem(url: String) {
+    val timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("MMM d, h:mm a"))
+    
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(8.dp)
+            .animateContentSize(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant
+        )
     ) {
         Column(
             modifier = Modifier
                 .padding(16.dp)
                 .fillMaxWidth()
         ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Icon(
+                    Icons.Default.Link,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+                Text(
+                    text = timestamp,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = url,
-                maxLines = 2, // Limit to 2 lines to prevent very long URLs from taking too much space
-                overflow = TextOverflow.Ellipsis // Show ... for truncated text
+                style = MaterialTheme.typography.bodyLarge,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
+            Spacer(modifier = Modifier.height(8.dp))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.End
+            ) {
+                TextButton(
+                    onClick = { /* TODO: Implement analyze action */ }
+                ) {
+                    Icon(
+                        Icons.Default.PlayArrow,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp)
+                    )
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("Analyze with ChatGPT")
+                }
+            }
         }
     }
 }

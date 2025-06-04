@@ -3,6 +3,7 @@ package net.lochan.gpthelper.api
 import android.content.Context
 import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.OpenAI
+import com.aallam.openai.client.OpenAIConfig
 import io.mockk.*
 import kotlinx.coroutines.runBlocking
 import org.junit.After
@@ -23,7 +24,11 @@ class ChatGptServiceTest {
     fun setUp() {
         credentialStorage = mockk(relaxed = true)
         openAI = mockk(relaxed = true)
-        service = ChatGptService(context, credentialStorage)
+        service = ChatGptService(
+            context,
+            credentialStorage,
+            openAIFactory = { _: OpenAIConfig -> openAI }
+        )
     }
 
     @After
@@ -66,20 +71,22 @@ class ChatGptServiceTest {
     fun `validateApiKey returns true for valid key`() = runBlocking {
         // Arrange
         val apiKey = "valid-api-key"
-        val models = listOf<Model>()
-        coEvery { openAI.models() } returns models
+        every { credentialStorage.saveApiKey(apiKey) } just Runs
+        coEvery { openAI.models() } returns listOf(mockk<Model>())
 
         // Act
         val result = service.validateApiKey(apiKey)
 
         // Assert
         assertTrue(result)
+        verify { credentialStorage.saveApiKey(apiKey) }
     }
 
     @Test
     fun `validateApiKey returns false for invalid key`() = runBlocking {
         // Arrange
         val apiKey = "invalid-api-key"
+        every { credentialStorage.saveApiKey(apiKey) } just Runs
         coEvery { openAI.models() } throws Exception("Invalid API key")
 
         // Act
@@ -87,6 +94,7 @@ class ChatGptServiceTest {
 
         // Assert
         assertFalse(result)
+        verify { credentialStorage.saveApiKey(apiKey) }
     }
 
     @Test
@@ -104,8 +112,9 @@ class ChatGptServiceTest {
     @Test
     fun `getModels returns list of models when authenticated`() = runBlocking {
         // Arrange
-        val expectedModels = listOf<Model>()
+        val expectedModels = listOf(mockk<Model>())
         coEvery { openAI.models() } returns expectedModels
+        service.initialize("key")
 
         // Act
         val result = service.getModels()
