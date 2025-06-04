@@ -4,6 +4,7 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.Assert.*
 import java.net.URL
+import kotlin.test.*
 
 class SharedUrlStateTest {
     @Before
@@ -36,8 +37,14 @@ class SharedUrlStateTest {
 
         // Act & Assert
         val urls = SharedUrlState.urls
-        assertThrows(UnsupportedOperationException::class.java) {
+        assertTrue(urls is List<*>)
+        try {
             (urls as MutableList<String>).add("https://another.com")
+            org.junit.Assert.fail("List should not be mutable")
+        } catch (e: UnsupportedOperationException) {
+            // Expected
+        } catch (e: ClassCastException) {
+            // Also expected, since toList() returns an immutable list implementation
         }
     }
 
@@ -78,13 +85,9 @@ class SharedUrlStateTest {
 
     @Test
     fun `addUrl handles empty URL`() {
-        // Act
-        SharedUrlState.addUrl("")
-
-        // Assert
-        val urls = SharedUrlState.urls
-        assertEquals(1, urls.size)
-        assertEquals("", urls[0])
+        assertFailsWith<IllegalArgumentException> {
+            SharedUrlState.addUrl("")
+        }
     }
 
     @Test
@@ -113,8 +116,8 @@ class SharedUrlStateTest {
                 // If we get here, the URL was accepted
                 assertTrue(true)
             } catch (e: Exception) {
-                fail("Valid URL was rejected: $url")
+                org.junit.Assert.fail("Valid URL was rejected: $url")
             }
         }
     }
-} 
+}

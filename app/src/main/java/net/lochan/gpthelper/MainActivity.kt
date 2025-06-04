@@ -174,7 +174,8 @@ object SharedUrlState {
     // Private mutable state list that holds the URLs
     private val _urls = mutableStateListOf<String>()
     // Public immutable list that can be observed by the UI
-    val urls: List<String> = _urls
+    val urls: List<String>
+        get() = _urls.toList()
 
     /**
      * Adds a new URL to the list.
