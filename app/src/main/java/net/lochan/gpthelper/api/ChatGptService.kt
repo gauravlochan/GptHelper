@@ -1,6 +1,7 @@
 package net.lochan.gpthelper.api
 
 import android.content.Context
+import android.net.ConnectivityManager
 import com.aallam.openai.api.model.Model
 import com.aallam.openai.client.OpenAI
 import com.aallam.openai.client.OpenAIConfig
@@ -8,6 +9,7 @@ import com.aallam.openai.api.http.Timeout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
+import java.io.IOException
 
 /**
  * Service class for handling ChatGPT API interactions.
@@ -63,14 +65,24 @@ class ChatGptService(
     suspend fun validateApiKey(apiKey: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
+                // Check for internet connectivity first
+                val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+                val network = connectivityManager.activeNetwork
+                if (network == null) {
+                    throw IOException("No internet connection available")
+                }
+
                 initialize(apiKey)
                 // Make a simple API call to verify the key
                 val models = openAI?.models()
                 isInitialized = models?.isNotEmpty() == true
                 isInitialized
-            } catch (e: Exception) {
+            } catch (e: IOException) {
                 isInitialized = false
                 throw e
+            } catch (e: Exception) {
+                isInitialized = false
+                throw IOException("Failed to validate API key: ${e.message}", e)
             }
         }
     }
