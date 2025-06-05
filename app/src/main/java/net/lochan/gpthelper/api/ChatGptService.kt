@@ -10,6 +10,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlin.time.Duration.Companion.seconds
 import java.io.IOException
+import net.lochan.gpthelper.model.Chat
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 
 /**
  * Service class for handling ChatGPT API interactions.
@@ -119,4 +123,41 @@ class ChatGptService(
      * @return true if the service is initialized and ready to use
      */
     fun isReady(): Boolean = isInitialized
+
+    /**
+     * Fetches the list of chats from the ChatGPT API.
+     * @param project Optional project name to filter chats
+     * @return List of chats or empty list if not authenticated
+     * @throws IOException if there's a network error
+     */
+    suspend fun getChats(project: String? = null): List<Chat> {
+        if (!isInitialized) {
+            return emptyList()
+        }
+        return withContext(Dispatchers.IO) {
+            try {
+                // TODO: Replace with actual API call once we have the correct endpoint
+                // For now, return mock data
+                listOf(
+                    Chat(
+                        id = "1",
+                        title = "Sample Chat 1",
+                        lastMessage = "This is a sample chat message",
+                        timestamp = LocalDateTime.now(),
+                        project = "Bookmarks"
+                    ),
+                    Chat(
+                        id = "2",
+                        title = "Sample Chat 2",
+                        lastMessage = "Another sample message",
+                        timestamp = LocalDateTime.now().minusHours(1),
+                        project = "Bookmarks"
+                    )
+                ).filter { chat -> project == null || chat.project == project }
+            } catch (e: Exception) {
+                isInitialized = false
+                throw IOException("Failed to fetch chats: ${e.message}", e)
+            }
+        }
+    }
 } 

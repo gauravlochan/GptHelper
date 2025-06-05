@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import net.lochan.gpthelper.ui.ApiKeyScreen
+import net.lochan.gpthelper.ui.ChatListScreen
 import net.lochan.gpthelper.ui.theme.GptHelperTheme
 import java.net.URL
 import java.time.LocalDateTime
@@ -57,7 +58,7 @@ class MainActivity : ComponentActivity() {
                         )
                     } else {
                         // Show main URL list screen with a button to access API key settings
-                        SharedUrlScreen(
+                        ChatListScreen(
                             onApiKeyClick = { showApiKeyScreen = true }
                         )
                     }
