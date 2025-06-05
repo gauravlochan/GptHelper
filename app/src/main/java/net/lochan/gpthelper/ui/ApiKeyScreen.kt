@@ -97,7 +97,7 @@ fun ApiKeyScreen(
                 is ApiKeyState.Invalid -> {
                     // Show error message for invalid keys
                     Text(
-                        "Invalid API key. Please check and try again.",
+                        (apiKeyState as ApiKeyState.Invalid).message,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
