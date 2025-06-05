@@ -30,12 +30,17 @@ class ApiKeyViewModel(application: Application) : AndroidViewModel(application) 
     val apiKeyState: StateFlow<ApiKeyState> = _apiKeyState.asStateFlow()
 
     init {
-        // On initialization, attempt to load and validate the saved API key
-        // This ensures the app starts with the correct state if a key was previously saved
-        if (chatGptService.initializeWithSavedKey()) {
-            _apiKeyState.value = ApiKeyState.Configured
-        } else {
-            _apiKeyState.value = ApiKeyState.NotConfigured
+        viewModelScope.launch {
+            _apiKeyState.value = ApiKeyState.Validating
+            try {
+                if (chatGptService.initializeWithSavedKey()) {
+                    _apiKeyState.value = ApiKeyState.Configured
+                } else {
+                    _apiKeyState.value = ApiKeyState.NotConfigured
+                }
+            } catch (e: Exception) {
+                _apiKeyState.value = ApiKeyState.Invalid("Failed to initialize with saved key: ${e.message}")
+            }
         }
     }
 
@@ -52,11 +57,15 @@ class ApiKeyViewModel(application: Application) : AndroidViewModel(application) 
     fun validateAndSaveApiKey(apiKey: String) {
         viewModelScope.launch {
             _apiKeyState.value = ApiKeyState.Validating
-            val isValid = chatGptService.validateApiKey(apiKey)
-            _apiKeyState.value = if (isValid) {
-                ApiKeyState.Configured
-            } else {
-                ApiKeyState.Invalid
+            try {
+                val isValid = chatGptService.validateApiKey(apiKey)
+                _apiKeyState.value = if (isValid) {
+                    ApiKeyState.Configured
+                } else {
+                    ApiKeyState.Invalid("Invalid API Key. Please check and try again.")
+                }
+            } catch (e: Exception) {
+                _apiKeyState.value = ApiKeyState.Invalid("Error validating API key: ${e.message}")
             }
         }
     }
@@ -95,5 +104,5 @@ sealed class ApiKeyState {
     object Configured : ApiKeyState()
     
     /** The provided API key was invalid */
-    object Invalid : ApiKeyState()
+    data class Invalid(val message: String) : ApiKeyState()
 } 
