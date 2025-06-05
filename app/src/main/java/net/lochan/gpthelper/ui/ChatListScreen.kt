@@ -1,5 +1,8 @@
 package net.lochan.gpthelper.ui
 
+import android.content.Intent
+import android.net.Uri
+import androidx.browser.customtabs.CustomTabsIntent
 import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,6 +22,8 @@ import net.lochan.gpthelper.viewmodel.ChatListState
 import net.lochan.gpthelper.viewmodel.ChatListViewModel
 import java.time.format.DateTimeFormatter
 
+private const val CHATGPT_BOOKMARKS_URL = "https://chatgpt.com/g/g-p-6803b328df808191937c0b8b8b6841a9-bookmarks/project"
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ChatListScreen(
@@ -25,6 +31,7 @@ fun ChatListScreen(
     viewModel: ChatListViewModel = viewModel()
 ) {
     val chatListState by viewModel.chatListState.collectAsState()
+    val context = LocalContext.current
     
     Scaffold(
         topBar = {
@@ -43,6 +50,17 @@ fun ChatListScreen(
                     }
                 },
                 actions = {
+                    IconButton(
+                        onClick = {
+                            val customTabsIntent = CustomTabsIntent.Builder().build()
+                            customTabsIntent.launchUrl(context, Uri.parse(CHATGPT_BOOKMARKS_URL))
+                        }
+                    ) {
+                        Icon(
+                            Icons.Default.OpenInNew,
+                            contentDescription = "Open ChatGPT"
+                        )
+                    }
                     IconButton(onClick = onApiKeyClick) {
                         Icon(Icons.Default.Settings, contentDescription = "API Key Settings")
                     }
@@ -62,7 +80,17 @@ fun ChatListScreen(
                         .padding(padding),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        CircularProgressIndicator()
+                        Text(
+                            "Loading your chats...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
             is ChatListState.Empty -> {
@@ -91,6 +119,18 @@ fun ChatListScreen(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
+                        Button(
+                            onClick = { viewModel.refresh() },
+                            modifier = Modifier.padding(top = 8.dp)
+                        ) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Refresh")
+                        }
                     }
                 }
             }
@@ -129,8 +169,36 @@ fun ChatListScreen(
                             style = MaterialTheme.typography.titleLarge,
                             color = MaterialTheme.colorScheme.error
                         )
-                        Button(onClick = { viewModel.refresh() }) {
-                            Text("Try Again")
+                        if (state.message.contains("API key")) {
+                            Button(
+                                onClick = onApiKeyClick,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Settings,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Configure API Key")
+                            }
+                        } else {
+                            Button(
+                                onClick = { viewModel.refresh() },
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.error
+                                )
+                            ) {
+                                Icon(
+                                    Icons.Default.Refresh,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Try Again")
+                            }
                         }
                     }
                 }

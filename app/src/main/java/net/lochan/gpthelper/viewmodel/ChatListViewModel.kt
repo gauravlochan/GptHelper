@@ -25,6 +25,11 @@ class ChatListViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch {
             _chatListState.value = ChatListState.Loading
             try {
+                if (!chatGptService.isReady()) {
+                    _chatListState.value = ChatListState.Error("Please configure your API key first")
+                    return@launch
+                }
+                
                 val chats = chatGptService.getChats(project)
                 _chatListState.value = if (chats.isEmpty()) {
                     ChatListState.Empty
@@ -32,7 +37,17 @@ class ChatListViewModel(application: Application) : AndroidViewModel(application
                     ChatListState.Success(chats)
                 }
             } catch (e: IOException) {
-                _chatListState.value = ChatListState.Error(e.message ?: "Failed to load chats")
+                _chatListState.value = ChatListState.Error(
+                    when {
+                        e.message?.contains("No internet connection") == true -> 
+                            "No internet connection. Please check your network and try again."
+                        e.message?.contains("Failed to validate API key") == true ->
+                            "Invalid API key. Please check your API key in settings."
+                        else -> e.message ?: "Failed to load chats"
+                    }
+                )
+            } catch (e: Exception) {
+                _chatListState.value = ChatListState.Error("An unexpected error occurred: ${e.message}")
             }
         }
     }

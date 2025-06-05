@@ -89,4 +89,5 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
 
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.browser:browser:1.7.0")
 }
